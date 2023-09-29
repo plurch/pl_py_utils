@@ -1,47 +1,14 @@
-import os
 import math
 import concurrent.futures
-import pandas as pd
-import subprocess
-import psutil
 from typing import Any, Callable, Sequence, NamedTuple
-from io import StringIO
 from timeit import default_timer as timer
 from datetime import datetime
 
-from .getsize import total_size
+from .resources import get_process_memory_usage, num_cpu_cores
 
 def getCurrentTimeStamp() -> str:
   # Ex. '2023-07-24T12_16_04'
   return datetime.now().isoformat(timespec='seconds').replace(':', '_')
-
-def getSizeObject(obj: object) -> str:
-  totalSizeBytes = total_size(obj)
-  return getSizePretty(totalSizeBytes)
-
-def getSizePretty(totalSizeBytes: int) -> str:
-  kbSize = 1024
-  mbSize = math.pow(kbSize, 2)
-  gbSize = math.pow(kbSize, 3)
-
-  if totalSizeBytes < kbSize:
-    unit = 'b'
-    resultSize = totalSizeBytes
-  elif totalSizeBytes < mbSize:
-    unit = 'kb'
-    resultSize = totalSizeBytes / kbSize
-  elif totalSizeBytes < gbSize:
-    unit = 'mb'
-    resultSize = totalSizeBytes / mbSize
-  else:
-    unit = 'gb'
-    resultSize = totalSizeBytes / gbSize
-
-  return f'{round(resultSize, 3)} {unit}'
-
-def get_process_memory_usage():
-  process = psutil.Process(os.getpid())
-  return getSizePretty(process.memory_info().rss)
 
 def timerPrint(msg: str):
   print(f'(timer: {round(timer())}) - {msg}', flush=True) # https://stackoverflow.com/a/36081434
@@ -57,44 +24,13 @@ def chunker_list_striped(seq: Any, num_chunks: int) -> list[Any]:
   return [seq[i::num_chunks] for i in range(num_chunks)]
 
 def recursive_dict_merge(d1: dict[Any, Any], d2: dict[Any, Any]) -> dict[Any, Any]:
-    '''update first dict with second recursively'''
-    # https://stackoverflow.com/a/24088493/ (see rec_merge2)
-    for k, v in d1.items():
-        if k in d2:
-            d2[k] = recursive_dict_merge(v, d2[k])
-    d1.update(d2)
-    return d1
-
-class CPU_cores(NamedTuple):
-  physical: int
-  logical: int
-
-def num_cpu_cores() -> CPU_cores:
-  return CPU_cores(psutil.cpu_count(logical=False), psutil.cpu_count(logical=True))
-
-def print_gpu_usage():
-  command = "nvidia-smi --query-gpu=utilization.gpu,utilization.memory,memory.total,memory.free,memory.used --format=csv"
-  command_output = subprocess.check_output(command.split()).decode('ascii')
-  df = pd.read_csv(StringIO(command_output))
-  print(df)
-
-def print_system_info():
-  cpu_cores = num_cpu_cores()
-  print(f'CPU cores: {cpu_cores.physical} physical, {cpu_cores.logical} logical')
-  mem_usage = psutil.virtual_memory()
-  print(f'Memory total: {getSizePretty(mem_usage.total)}')
-  print(f'Memory available: {getSizePretty(mem_usage.available)}')
-  print(f'Current python process memory usage: {get_process_memory_usage()}')
-  disk_usage = psutil.disk_usage("/")
-  print(f'Disk (/) total: {getSizePretty(disk_usage.total)}')
-  print(f'Disk (/) used: {getSizePretty(disk_usage.used)}')
-  print(f'Disk (/) free: {getSizePretty(disk_usage.free)}')
-  try:
-    command_output = subprocess.check_output('nvidia-smi').decode('ascii')
-  except:
-    command_output = 'No GPU found!'
-  print('nvidia-smi output:')
-  print(command_output)
+  '''update first dict with second recursively'''
+  # https://stackoverflow.com/a/24088493/ (see rec_merge2)
+  for k, v in d1.items():
+      if k in d2:
+          d2[k] = recursive_dict_merge(v, d2[k])
+  d1.update(d2)
+  return d1
 
 def map_parallel(
   fn: Callable,
