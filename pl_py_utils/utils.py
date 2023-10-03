@@ -11,6 +11,19 @@ def getCurrentTimeStamp() -> str:
   return datetime.now().isoformat(timespec='seconds').replace(':', '_')
 
 def timerPrint(msg: str):
+  """
+  Print a message with an accompanying timestamp from a timer and the current process's memory usage.
+
+  The function first retrieves the current timer value, formats it alongside the provided message,
+  and then prints the message. Following this, it prints the memory usage of the current process.
+
+  The flush=True argument in the print function ensures that the print output is immediately written 
+  to the stream without buffering. This is useful in scenarios where immediate feedback is crucial, 
+  such as long-running processes or real-time monitoring.
+
+  Args:
+      msg (str): The message to be printed alongside the timer's timestamp.
+  """
   print(f'(timer: {round(timer())}) - {msg}', flush=True) # https://stackoverflow.com/a/36081434
   print(get_process_memory_usage())
 
