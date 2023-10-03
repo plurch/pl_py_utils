@@ -1,13 +1,19 @@
 
-import sys
-import os
-
-parent_dir_path = os.path.abspath(os.path.join('..'))
-if parent_dir_path not in sys.path:
-    sys.path.append(parent_dir_path)
-
 from pl_py_utils.resources import getSizePretty
 
-def test_getSizePretty():
-  result = getSizePretty(totalSizeBytes=3747474)
-  assert result == '3.574 mb'
+class TestGetSizePretty:
+  def test_bytes(self):
+    result = getSizePretty(totalSizeBytes=506)
+    assert result == '506 b'
+
+  def test_kilobytes(self):
+      result = getSizePretty(totalSizeBytes=1702)
+      assert result == '1.662 kb'
+
+  def test_megabytes(self):
+      result = getSizePretty(totalSizeBytes=3747474)
+      assert result == '3.574 mb'
+
+  def test_gigabytes(self):
+      result = getSizePretty(totalSizeBytes=4783474736)
+      assert result == '4.455 gb'

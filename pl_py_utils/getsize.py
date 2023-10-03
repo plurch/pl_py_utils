@@ -1,11 +1,9 @@
-# from __future__ import print_function
 from sys import getsizeof, stderr
 from itertools import chain
 from collections import deque
 from reprlib import repr
 
 def total_size(o, handlers={}, verbose=False):
-    # https://code.activestate.com/recipes/577504-compute-memory-footprint-of-an-object-and-its-cont/
     """ Returns the approximate memory footprint an object and all of its contents.
 
     Automatically finds the contents of the following builtin containers and
@@ -15,6 +13,7 @@ def total_size(o, handlers={}, verbose=False):
         handlers = {SomeContainerClass: iter,
                     OtherContainerClass: OtherContainerClass.get_elements}
 
+    https://code.activestate.com/recipes/577504-compute-memory-footprint-of-an-object-and-its-cont/
     """
     dict_handler = lambda d: chain.from_iterable(d.items())
     all_handlers = {tuple: iter,
