@@ -1,5 +1,5 @@
 import numpy as np
-from pl_py_utils.utils import max_sublist, chunker_list_striped, recursive_dict_merge
+from pl_py_utils.utils import max_sublist, chunker_list_striped, recursive_dict_merge, int_commas
 
 class TestMaxSubList:
   def test_list(self):
@@ -42,3 +42,7 @@ class TestRecursiveDictMerge:
     res = recursive_dict_merge(a, b)
     expected = {'keyA': 1, 'keyB': {'sub1': 10, 'sub2': 20}}
     assert res == expected
+
+class TestIntCommas:
+  def test_format(self):
+    assert int_commas(23112959) == '23,112,959'

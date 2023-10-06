@@ -55,3 +55,6 @@ def recursive_dict_merge(d1: dict[Any, Any], d2: dict[Any, Any]) -> dict[Any, An
       d2[k] = recursive_dict_merge(v, d2[k])
   d1.update(d2)
   return d1
+
+def int_commas(n: int) -> str:
+  return "{:,}".format(n)
