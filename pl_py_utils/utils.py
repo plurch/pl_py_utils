@@ -56,5 +56,22 @@ def recursive_dict_merge(d1: dict[Any, Any], d2: dict[Any, Any]) -> dict[Any, An
   d1.update(d2)
   return d1
 
+def dict_filter_out(d: dict, filter_out: Sequence[Any]) -> dict:
+  """
+  Filters out specified keys from a dictionary.
+  
+  Parameters:
+  - d (dict): The input dictionary to be filtered.
+  - filter_out (Sequence[Any]): A sequence of keys that should be removed from the input dictionary.
+  
+  Returns:
+  - dict: A new dictionary with the specified keys filtered out.
+  
+  Examples:
+  >>> dict_filter_out({'a': 1, 'b': 2, 'c': 3}, ['a', 'c'])
+  {'b': 2}
+  """
+  return {k: v for k, v in d.items() if k not in filter_out}
+
 def int_commas(n: int) -> str:
   return "{:,}".format(n)

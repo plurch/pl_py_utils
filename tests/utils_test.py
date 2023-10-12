@@ -1,5 +1,5 @@
 import numpy as np
-from pl_py_utils.utils import max_sublist, chunker_list_striped, recursive_dict_merge, int_commas
+from pl_py_utils.utils import max_sublist, chunker_list_striped, recursive_dict_merge, int_commas, dict_filter_out
 
 class TestMaxSubList:
   def test_list(self):
@@ -46,3 +46,7 @@ class TestRecursiveDictMerge:
 class TestIntCommas:
   def test_format(self):
     assert int_commas(23112959) == '23,112,959'
+
+class TestDictFilterOut:
+  def test_dict_filter_out(self):
+    assert dict_filter_out({'a': 1, 'b': 2, 'c': 3}, ['a', 'c']) == {'b': 2}
