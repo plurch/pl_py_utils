@@ -1,6 +1,18 @@
 import numpy as np
 import numpy.typing as npt
 
+def topk_indices_desc_new(a: npt.NDArray[np.floating], k: int) -> npt.NDArray[np.integer]:
+  '''
+  Similar to `topk_indices_desc` below, but works for each row of input `a`
+  TODO: add docs, unit tests. Integrate in app code. Replace below or keep?
+  '''
+  row_indices_range = np.arange(a.shape[0])[:, np.newaxis] # to select all rows
+  i_all = np.argpartition(a, -k) # partition indices
+  i = i_all[:, -k:] # get top k indices columns
+  topk_values = a[row_indices_range, i] # get top k values for each row in initial array
+  j = np.fliplr(np.argsort(topk_values)) # get indices sorted descending
+  return i[row_indices_range, j] # map back to original indices
+
 # can use numba @njit(nogil=True) in application code
 # https://stackoverflow.com/questions/6910641/how-do-i-get-indices-of-n-maximum-values-in-a-numpy-array
 def topk_indices_desc(a: npt.NDArray[np.floating], k: int) -> npt.NDArray[np.integer]:
