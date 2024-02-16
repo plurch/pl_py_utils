@@ -1,8 +1,10 @@
 import math
+import platform
 import numpy.typing as npt
 from typing import Any, Callable, Sequence, NamedTuple, TypeVar, Generic, Union, overload
 from timeit import default_timer as timer
 from datetime import datetime
+from importlib.metadata import version
 
 from .resources import get_process_memory_usage, num_cpu_cores
 
@@ -74,4 +76,26 @@ def dict_filter_out(d: dict, filter_out: Sequence[Any]) -> dict:
   return {k: v for k, v in d.items() if k not in filter_out}
 
 def int_commas(n: int) -> str:
+  """
+  Formats integer with comma separators.
+  123456789 -> '123,456,789'
+  """
   return "{:,}".format(n)
+
+def print_module_versions(modules_list: Sequence[str]):
+  """
+  Prints the versions of specified modules.
+
+  Parameters:
+  - modules_list (Sequence[str]): A list or sequence of strings representing the names
+    of the modules for which the version information is to be printed.
+
+  Example usage:
+  >>> print_module_versions(['numpy', 'pandas'])
+  numpy: 1.19.2
+  pandas: 1.1.3
+  """
+  print(f'python: {platform.python_version()}')
+
+  for m in modules_list:
+    print(f'{m}: {version(m)}')
