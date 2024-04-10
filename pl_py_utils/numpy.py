@@ -81,3 +81,12 @@ def normalize_vec(v: npt.NDArray[np.floating]) -> npt.NDArray[np.floating]:
   if norm == 0:
     raise ZeroDivisionError
   return v / norm
+
+def json_serialize_np_float(obj):
+  '''
+  convert from numpy floating point to python float
+  TODO: unit tests, better docs
+  '''
+  if isinstance(obj, np.floating):
+    return float(obj)
+  raise TypeError("Object of type '%s' is not JSON serializable" % type(obj).__name__)
