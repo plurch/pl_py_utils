@@ -99,3 +99,10 @@ def print_module_versions(modules_list: Sequence[str]):
 
   for m in modules_list:
     print(f'{m}: {version(m)}')
+
+def get_env_var(env_var: str) -> str:
+  """Returns the value of `env_var` if it exists in env vars."""
+  try:
+    return os.environ[env_var]
+  except KeyError:
+    raise ValueError(f"Environment variable {env_var} is not set")
