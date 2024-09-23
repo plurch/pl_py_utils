@@ -107,3 +107,22 @@ def get_env_var(env_var: str) -> str:
     return os.environ[env_var]
   except KeyError:
     raise ValueError(f"Environment variable {env_var} is not set")
+
+def print_time_elapsed(start_time: float):
+  """Prints elapsed time in human readable format"""
+  end_time = timer()
+  elapsed = end_time - start_time
+  
+  if elapsed < 1:
+    result_str = f"ran in {elapsed*1000:.2f} milliseconds"
+  elif elapsed < 60:
+    result_str = f"ran in {elapsed:.2f} seconds"
+  elif elapsed < 3600:
+    minutes, seconds = divmod(elapsed, 60)
+    result_str = f"ran in {int(minutes)} minutes and {seconds:.2f} seconds"
+  else:
+    hours, remainder = divmod(elapsed, 3600)
+    minutes, seconds = divmod(remainder, 60)
+    result_str = f"ran in {int(hours)} hours, {int(minutes)} minutes, and {seconds:.2f} seconds"
+
+  print(result_str, flush=True)
