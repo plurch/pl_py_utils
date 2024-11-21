@@ -90,3 +90,26 @@ def json_serialize_np_float(obj):
   if isinstance(obj, np.floating):
     return float(obj)
   raise TypeError("Object of type '%s' is not JSON serializable" % type(obj).__name__)
+
+def print_array_info(arr):
+  '''
+  Print memory usage info for numpy array
+  '''
+  nbytes = arr.nbytes  # total bytes
+  size = arr.size      # total elements
+  itemsize = arr.itemsize  # bytes per element
+  
+  # Convert to more readable units
+  units = ['B', 'KB', 'MB', 'GB']
+  unit_index = 0
+  memory_size = nbytes
+  while memory_size >= 1024 and unit_index < len(units) - 1:
+      memory_size /= 1024
+      unit_index += 1
+      
+  print(f"Shape: {arr.shape}")
+  print(f"Total elements: {size:,}")
+  print(f"Element size: {itemsize} bytes")
+  print(f"Total memory: {memory_size:.2f} {units[unit_index]}")
+  print(f"Data type: {arr.dtype}")
+
