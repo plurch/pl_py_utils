@@ -122,4 +122,6 @@ def get_process_memory_usage():
             current process.
   """
   process = psutil.Process(os.getpid())
-  return getSizePretty(process.memory_info().rss)
+  mem_info = process.memory_info()
+  # mem_info.vms for VMS
+  return getSizePretty(mem_info.rss)
