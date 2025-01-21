@@ -2,7 +2,8 @@ import os
 import math
 import psutil
 import subprocess
-import pandas as pd
+import csv
+from pprint import pprint
 from typing import Any, Callable, Sequence, NamedTuple
 from io import StringIO
 
@@ -70,8 +71,8 @@ class CPU_cores(NamedTuple):
                       includes cores resulting from technologies like Intel's 
                       Hyper-Threading.
   """
-  physical: int
-  logical: int
+  physical: int | None
+  logical: int | None
 
 def num_cpu_cores() -> CPU_cores:
   """
@@ -87,9 +88,11 @@ def num_cpu_cores() -> CPU_cores:
 
 def print_gpu_usage():
   command = "nvidia-smi --query-gpu=utilization.gpu,utilization.memory,memory.total,memory.free,memory.used --format=csv"
-  command_output = subprocess.check_output(command.split()).decode('ascii')
-  df = pd.read_csv(StringIO(command_output))
-  print(df)
+  result = subprocess.run(command.split(), capture_output=True, text=True)
+  csv_output = result.stdout.strip()
+  reader = csv.DictReader(csv_output.splitlines())
+  data = next(reader, None)  # Get the single data row as a dictionary
+  pprint(data)
 
 def print_system_info():
   cpu_cores = num_cpu_cores()
