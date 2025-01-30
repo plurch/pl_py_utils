@@ -2,8 +2,10 @@ import math
 import os
 import platform
 import signal
+import importlib.util
 import numpy.typing as npt
-from typing import Any, Callable, Sequence, NamedTuple, TypeVar, Generic, Union, overload
+from typing import Any, Sequence, TypeVar
+from types import ModuleType
 from timeit import default_timer as timer
 from datetime import datetime
 from importlib.metadata import version
@@ -140,3 +142,42 @@ def print_time_elapsed(start_time: float):
     result_str = f"ran in {int(hours)} hours, {int(minutes)} minutes, and {seconds:.2f} seconds"
 
   print(result_str, flush=True)
+
+def import_from_path(module_name: str, module_path: str) -> ModuleType:
+  """
+    Dynamically imports a Python module from a file path.
+
+    Args:
+        module_name (str): The name to give to the imported module. This name will be used
+                          to reference the module in the program.
+        module_path (str): The absolute or relative file path to the Python module file (.py).
+                          Should include the file extension.
+
+    Returns:
+        module (ModuleType): The imported module object that can be used to access its attributes and functions.
+
+    Raises:
+        ValueError: If the module specification cannot be created (spec is None).
+        ImportError: If the module cannot be loaded or executed.
+        FileNotFoundError: If the specified module_path does not exist.
+
+    Examples:
+        >>> # Import a module with a custom name
+        >>> utils = import_from_path("utils", "/path/to/utilities.py")
+        >>> utils.some_function()
+        
+        >>> # Import a local module
+        >>> helper = import_from_path("helper", "./helper_functions.py")
+        >>> result = helper.process_data()
+    
+    Notes:
+        - The module_name parameter determines how you'll reference the module after import
+        - The module_path must point to a valid .py file
+        - Use absolute paths when possible to avoid path resolution issues
+    """
+  spec = importlib.util.spec_from_file_location(module_name, module_path)
+  if spec is None:
+    raise ValueError(f"Failed to import - spec is None")
+  mymodule = importlib.util.module_from_spec(spec)
+  spec.loader.exec_module(mymodule) # type:ignore
+  return mymodule
