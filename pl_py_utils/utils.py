@@ -1,6 +1,7 @@
 import math
 import os
 import platform
+import zoneinfo
 import signal
 import importlib.util
 import numpy.typing as npt
@@ -33,6 +34,14 @@ def getCurrentTimeStamp() -> str:
   Return timestamp as string. Ex. '2023-07-24T12_16_04'
   """
   return datetime.now().isoformat(timespec='seconds').replace(':', '_')
+
+def get_iso_timestamp_with_zone() -> str:
+  """
+  Return current timestamp in ISO format. Useful for postgres timestamp with zone insertion.
+
+  Ex. '2025-03-26T17:17:42.364646+00:00'
+  """
+  return datetime.now(zoneinfo.ZoneInfo("UTC")).isoformat()
 
 def timerPrint(msg: str):
   """
