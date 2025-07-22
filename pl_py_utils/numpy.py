@@ -1,9 +1,10 @@
 import numpy as np
 import numpy.typing as npt
+from typing import Literal
 
 def topk_indices_desc_new(a: npt.NDArray[np.floating], k: int) -> npt.NDArray[np.integer]:
   '''
-  Similar to `topk_indices_desc` below, but works for each row of input `a`
+  Similar to `topk_indices` below, but works for each row of input `a`
   TODO: add docs, unit tests. Integrate in app code. Replace below or keep?
   '''
   row_indices_range = np.arange(a.shape[0])[:, np.newaxis] # to select all rows
@@ -15,9 +16,9 @@ def topk_indices_desc_new(a: npt.NDArray[np.floating], k: int) -> npt.NDArray[np
 
 # can use numba @njit(nogil=True) in application code
 # https://stackoverflow.com/questions/6910641/how-do-i-get-indices-of-n-maximum-values-in-a-numpy-array
-def topk_indices_desc(a: npt.NDArray[np.floating], k: int) -> npt.NDArray[np.integer]:
+def topk_indices(a: npt.NDArray[np.floating], k: int, ordering: Literal['desc', 'asc'] = 'desc') -> npt.NDArray[np.integer]:
   """
-  Find the indices of the top `k` largest elements in the array `a`, sorted in descending order.
+  Find the indices of the top `k` largest elements in the array `a`, sorted in specified order.
 
   Equivalent to `np.argsort(r)[::-1][:k]`, but doesn't have to sort entire array, only k values
 
@@ -27,6 +28,8 @@ def topk_indices_desc(a: npt.NDArray[np.floating], k: int) -> npt.NDArray[np.int
       The input array containing numerical values.
   k : int
       The number of top elements to select.
+  ordering : Literal['desc', 'asc']
+      The ordering either descending or ascending
 
   Returns:
   --------
@@ -36,14 +39,28 @@ def topk_indices_desc(a: npt.NDArray[np.floating], k: int) -> npt.NDArray[np.int
 
   Examples:
   ---------
-  >>> topk_indices_desc(np.array([1.2, 3.4, 0.8, 2.3]), 2)
+  >>> topk_indices(np.array([1.2, 3.4, 0.8, 2.3]), 2)
   array([1, 3])
 
-  >>> topk_indices_desc(np.array([5.0, 4.5, 4.6]), 3)
+  >>> topk_indices(np.array([5.0, 4.5, 4.6]), 3)
   array([0, 2, 1])
   """
-  i = np.argpartition(a, -k)[-k:] # find top k largest values O(n)
-  j = np.argsort(a[i])[::-1] # sort only top k values O(k log k)
+  if k < 0:
+    raise ValueError(f"k must be non-negative, got {k}")
+
+  n = len(a)
+  if k > n:
+      raise ValueError(f"k ({k}) cannot be larger than array size ({n})")
+
+  if ordering == 'desc':
+    i = np.argpartition(a, -k)[-k:] # find top k largest values O(n)
+    j = np.argsort(a[i])[::-1] # sort only top k values O(k log k)
+  elif ordering == 'asc':
+    i = np.argpartition(a, k-1)[:k] # find top k smallest values O(n)
+    j = np.argsort(a[i]) # sort only top k values O(k log k)
+  else:
+    raise ValueError("`ordering` must be 'asc' or 'desc'")
+
   return i[j] # return original indices sorted
 
 def normalize_vec(v: npt.NDArray[np.floating]) -> npt.NDArray[np.floating]:
