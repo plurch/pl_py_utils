@@ -9,6 +9,7 @@ from typing import Any, Sequence, TypeVar
 from types import ModuleType
 from timeit import default_timer as timer
 from datetime import datetime
+from pathlib import Path
 from importlib.metadata import version
 
 from .resources import get_process_memory_usage, num_cpu_cores
@@ -28,6 +29,12 @@ class Timeout:
     signal.alarm(self.seconds)
   def __exit__(self, type, value, traceback):
     signal.alarm(0)
+
+def get_file_path_str(file_path: Path | str) -> str:
+  if isinstance(file_path, Path):
+    file_path = str(file_path.resolve()) # convert to str if necessary
+
+  return file_path
 
 def getCurrentTimeStamp() -> str:
   """
