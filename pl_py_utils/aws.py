@@ -1,10 +1,10 @@
 import os
 import json
 from pathlib import Path
-from utils import timerPrint, get_file_path_str
+from .utils import timerPrint, get_file_path_str
 
 # use `from functools import partial` to bind args:
-# s3_download_file = partial(s3_download, s3_client=s3_client, bucket_name=bucket_name)
+# s3_download_file = partial(s3_download, s3_client, bucket_name)
 def s3_download(s3_client, bucket_name: str, local_file_path: Path | str, s3_path: str):
   timerPrint(f'Downloading from S3: {s3_path}')
   s3_client.download_file(bucket_name, s3_path, get_file_path_str(local_file_path))

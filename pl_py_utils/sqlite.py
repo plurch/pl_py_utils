@@ -1,6 +1,6 @@
 import subprocess
 from pathlib import Path
-from utils import timerPrint, get_file_path_str
+from .utils import timerPrint, get_file_path_str
 
 def import_csv(csv_file: str | Path, sqlite_db_file: str | Path, table_name: str):
   # import a csv file using cli
