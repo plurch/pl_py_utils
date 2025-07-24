@@ -8,12 +8,12 @@ class TestGetSizePretty:
 
   def test_kilobytes(self):
       result = getSizePretty(totalSizeBytes=1702)
-      assert result == '1.662 kb'
+      assert result == '1.7 kb'
 
   def test_megabytes(self):
       result = getSizePretty(totalSizeBytes=3747474)
-      assert result == '3.574 mb'
+      assert result == '3.6 mb'
 
   def test_gigabytes(self):
       result = getSizePretty(totalSizeBytes=4783474736)
-      assert result == '4.455 gb'
+      assert result == '4.5 gb'

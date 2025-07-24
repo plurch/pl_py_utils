@@ -64,8 +64,7 @@ def timerPrint(msg: str):
   Args:
       msg (str): The message to be printed alongside the timer's timestamp.
   """
-  print(f'(timer: {round(timer())}) - {msg}', flush=True) # https://stackoverflow.com/a/36081434
-  print(get_process_memory_usage(), flush=True)
+  print(f'({round(timer())}, {get_process_memory_usage()}) - {msg}', flush=True) # https://stackoverflow.com/a/36081434
 
 def max_sublist(l: Sequence[T], max_len: int) -> list[Sequence[T]]:
   """

@@ -59,7 +59,7 @@ def getSizePretty(totalSizeBytes: int) -> str:
     unit = 'gb'
     resultSize = totalSizeBytes / gbSize
 
-  return f'{round(resultSize, 3)} {unit}'
+  return f'{round(resultSize, 1)} {unit}'
 
 class CPU_cores(NamedTuple):
   """
