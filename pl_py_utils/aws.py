@@ -26,7 +26,9 @@ def download_s3_dir(s3_client, bucket_name: str, prefix: str, download_dir: Path
 def get_secret_dict(boto_session, secret_name: str, region_name = "us-east-1") -> dict:
   '''
   sample code from aws console secrets manager
+  https://docs.aws.amazon.com/secretsmanager/latest/userguide/retrieving-secrets-python-sdk.html
   boto_session = boto3.Session(region_name='us-east-1')
+  may want to refactor this to conditionally parse json
   '''
   client = boto_session.client(service_name='secretsmanager', region_name=region_name)
 
