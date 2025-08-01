@@ -1,6 +1,7 @@
 import numpy as np
 import numpy.typing as npt
 from typing import Literal
+from .resources import getSizePretty
 
 def topk_indices_desc_new(a: npt.NDArray[np.floating], k: int) -> npt.NDArray[np.integer]:
   '''
@@ -129,4 +130,13 @@ def print_array_info(arr):
   print(f"Element size: {itemsize} bytes")
   print(f"Total memory: {memory_size:.2f} {units[unit_index]}")
   print(f"Data type: {arr.dtype}")
+
+def get_csr_matrix_bytes(my_csr_matrix) -> int:
+  '''
+  get number of bytes used by a scipy CSR matrix
+  '''
+  return my_csr_matrix.data.nbytes + my_csr_matrix.indices.nbytes + my_csr_matrix.indptr.nbytes
+
+def get_csr_matrix_size_pretty(my_csr_matrix) -> str:
+  return getSizePretty(get_csr_matrix_bytes(my_csr_matrix))
 
