@@ -1,5 +1,6 @@
 import os
 import json
+from functools import partial
 from pathlib import Path
 from .utils import timerPrint, get_file_path_str
 
@@ -12,6 +13,12 @@ def s3_download(s3_client, bucket_name: str, local_file_path: Path | str, s3_pat
 def s3_upload(s3_client, bucket_name: str, local_file_path: Path | str, s3_path: str):
   timerPrint(f'Uploading to S3: {s3_path}')
   s3_client.upload_file(get_file_path_str(local_file_path), bucket_name, s3_path)
+
+def get_s3_downloader(s3_client, bucket_name: str):
+  return partial(s3_download, s3_client, bucket_name)
+
+def get_s3_uploader(s3_client, bucket_name: str):
+  return partial(s3_upload, s3_client, bucket_name)
 
 def download_s3_dir(s3_client, bucket_name: str, prefix: str, download_dir: Path):
   # List and download all objects with the specified key prefix
