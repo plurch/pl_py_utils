@@ -1,4 +1,5 @@
 import signal
+import sys
 from types import FrameType
 from typing import Optional, Type
 
@@ -54,6 +55,12 @@ class ShutdownManager:
     # You can also make it behave like a boolean for more concise checks
     def __bool__(self) -> bool:
         return self._shutdown_requested
+
+    def check_and_exit(self, exit_status = 1):
+        """Check if a shutdown has been requested and then exit if so."""
+        if self._shutdown_requested:
+            print("Shutdown was requested - exiting now.")
+            sys.exit(exit_status)
 
 # Example usage if the module is run directly
 if __name__ == "__main__":
