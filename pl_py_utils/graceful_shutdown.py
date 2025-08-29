@@ -10,6 +10,9 @@ class ShutdownManager:
     It encapsulates the shutdown state, avoiding the need for global variables. guarantee that your custom signal handling is only active while your code is running.
     Avoid overwriting signal handlers for entire application when your code is imported as a module.
 
+    # testing: `kill -SIGTERM <process id>` or CTRL-C in terminal (for SIGINT)
+    # see test script: `test_signal.py` (old version - needs update)
+
     Usage:
         with ShutdownManager() as manager:
             while not manager.is_shutdown_requested():
