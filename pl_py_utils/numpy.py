@@ -6,7 +6,8 @@ from .resources import getSizePretty
 def topk_indices_desc_new(a: npt.NDArray[np.floating], k: int) -> npt.NDArray[np.integer]:
   '''
   Similar to `topk_indices` below, but works for each row of input `a`
-  TODO: add docs, unit tests. Integrate in app code. Replace below or keep?
+  see also: `torch.topk()`
+  TODO: support asc/desc, add docs, unit tests. Integrate in app code. Replace below or keep?
   '''
   row_indices_range = np.arange(a.shape[0])[:, np.newaxis] # to select all rows
   i_all = np.argpartition(a, -k) # partition indices
@@ -130,6 +131,9 @@ def print_array_info(arr):
   print(f"Element size: {itemsize} bytes")
   print(f"Total memory: {memory_size:.2f} {units[unit_index]}")
   print(f"Data type: {arr.dtype}")
+
+def get_np_array_size_pretty(a: npt.NDArray) -> str:
+  return getSizePretty(a.nbytes)
 
 def get_csr_matrix_bytes(my_csr_matrix) -> int:
   '''
