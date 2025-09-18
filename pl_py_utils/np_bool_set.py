@@ -5,12 +5,16 @@ import numpy as np
 class NumpyBoolSet:
   """Efficient set that can store non-negative integers. Must know max value at construction time."""
   
-  def __init__(self, max_value: int):
+  def __init__(self, max_value: int, initial_values: list[int] = []):
     """
     Initialize an empty set with integers in [0, max_value].
     """
     self.max_value = max_value
     self.mask = np.zeros(max_value + 1, dtype=bool)
+
+    if len(initial_values) > 0:
+      for i in initial_values:
+        self.add(i)
 
   def add(self, value: int):
     """Add an integer to the set."""
