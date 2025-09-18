@@ -1,4 +1,5 @@
 import numpy as np
+from typing import Iterable
 
 # TODO: add tests
 # https://chatgpt.com/c/68cc5ed2-3fa4-832f-92de-c223aa638881
@@ -6,15 +7,13 @@ import numpy as np
 class NumpyBoolSet:
   """Efficient set that can store non-negative integers. Must know max value at construction time."""
   
-  def __init__(self, max_value: int, initial_values: list[int] = []):
+  def __init__(self, max_value: int, initial_values: Iterable[int] = []):
     """
     Initialize an empty set with integers in [0, max_value].
     """
     self.max_value = max_value
     self.mask = np.zeros(max_value + 1, dtype=bool)
-
-    if len(initial_values) > 0:
-      self.update(initial_values)
+    self.update(initial_values)
 
   def add(self, value: int):
     """Add an integer to the set."""
@@ -23,13 +22,10 @@ class NumpyBoolSet:
     else:
       raise ValueError(f"value {value} out of range [0, {self.max_value}]")
 
-  def update(self, values: list[int]):
-    """Add a list of integers to the set."""
-    if len(values) > 0:
-      for v in values:
-        self.add(v)
-    else:
-      raise ValueError(f"Provide a non-empty list of integers")
+  def update(self, values: Iterable[int]):
+    """Add an iterable of integers to the set."""
+    for v in values:
+      self.add(v)
     
   def remove(self, value: int):
     """Remove an integer from the set, raises KeyError if not present."""
