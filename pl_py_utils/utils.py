@@ -72,12 +72,24 @@ def max_sublist(l: Sequence[T], max_len: int) -> list[Sequence[T]]:
   """
   return [l[i * max_len: (i+1) * max_len] for i in range(math.ceil(len(l) / max_len))]
 
+def chunk_list(lst: list, n: int) -> list:
+  """Split list into n roughly equal chunks"""
+  k, m = divmod(len(lst), n)
+  return [lst[i*k + min(i, m):(i+1)*k + min(i+1, m)] for i in range(n)]
+
 def chunker_list_striped(seq: npt.NDArray, num_chunks: int) -> list[npt.NDArray]:
   """
   Split list into number of chunks. sublists are striped - they do not preserve overall list order
   """
   # https://stackoverflow.com/a/43922107/
   return [seq[i::num_chunks] for i in range(num_chunks)]
+
+def merge_dicts(iterator):
+  """merge iterator of dicts into single dict. useful for multiprocessing output"""
+  merged = {}
+  for d in iterator:
+      merged.update(d)
+  return merged
 
 def recursive_dict_merge(d1: dict[Any, Any], d2: dict[Any, Any]) -> dict[Any, Any]:
   """
