@@ -44,7 +44,7 @@ class NumpyBoolSet:
 
   def __iter__(self):
     """Iterate over elements in the set."""
-    return iter(np.flatnonzero(self.mask))
+    return (idx.item() for idx in np.flatnonzero(self.mask)) # generator expression
 
   def __len__(self) -> int:
     """Number of elements in the set."""
@@ -52,7 +52,7 @@ class NumpyBoolSet:
 
   def to_list(self):
     """Return elements as a Python list."""
-    return np.flatnonzero(self.mask).tolist()
+    return [idx.item() for idx in np.flatnonzero(self.mask)] # convert to python int instead of np.int64
 
   # --- set operations ---
   def union(self, other: "NumpyBoolSet") -> "NumpyBoolSet":
