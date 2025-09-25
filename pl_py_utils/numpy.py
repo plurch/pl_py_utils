@@ -3,18 +3,93 @@ import numpy.typing as npt
 from typing import Literal
 from .resources import getSizePretty
 
-def topk_indices_desc_new(a: npt.NDArray[np.floating], k: int) -> npt.NDArray[np.integer]:
-  '''
-  Similar to `topk_indices` below, but works for each row of input `a`
-  see also: `torch.topk()`
-  TODO: support asc/desc, add docs, unit tests. Integrate in app code. Replace below or keep?
-  '''
-  row_indices_range = np.arange(a.shape[0])[:, np.newaxis] # to select all rows
-  i_all = np.argpartition(a, -k) # partition indices
-  i = i_all[:, -k:] # get top k indices columns
-  topk_values = a[row_indices_range, i] # get top k values for each row in initial array
-  j = np.fliplr(np.argsort(topk_values)) # get indices sorted descending
-  return i[row_indices_range, j] # map back to original indices
+def row_wise_top_k(
+  a: npt.NDArray[np.floating],
+  top_k: int,
+  sort_order: Literal["asc", "desc"] = "asc",
+  sort_within_rows: bool = True
+) -> npt.NDArray[np.intp]:
+  """
+  Performs efficient row-wise top-k sorting for a 2D array using argpartition.
+
+  This function finds the indices of the top-k values for each row in the input
+  array. It is highly efficient for large arrays when k is much smaller than
+  the number of columns, as it avoids a full sort.
+
+  Args:
+    a: The 2D input array with shape (n_rows, n_cols).
+    top_k: The number of top elements to return for each row.
+    sort_order: The order of sorting.
+      "asc" for ascending (smallest values are "top").
+      "desc" for descending (largest values are "top").
+      Defaults to "asc".
+    sort_within_rows: If True, the returned k indices for each row will be
+      sorted according to their corresponding values. If False, the k indices
+      will be returned in an arbitrary order. Defaults to True.
+
+  Returns:
+    A 2D integer array of shape (n_rows, top_k) containing the column
+    indices of the top-k values for each row.
+
+  Raises:
+    ValueError: If top_k is larger than the number of columns in 'a' or if
+                sort_order is not 'asc' or 'desc'.
+
+  https://aistudio.google.com/app/prompts/1r1VEUqrb4Qm38OLvA8Cos90Il9aK2nAW
+  """
+  # --- Input Validation ---
+  if a.ndim != 2:
+    raise ValueError("Input array 'a' must be 2-dimensional.")
+  n_rows, n_cols = a.shape
+  if top_k > n_cols:
+    raise ValueError(
+      f"top_k ({top_k}) cannot be larger than the number of columns ({n_cols})."
+    )
+  if sort_order not in ["asc", "desc"]:
+    raise ValueError("sort_order must be either 'asc' or 'desc'.")
+
+  # --- Core Logic using argpartition ---
+  # np.argpartition is efficient for finding the k-th smallest element's index
+  # without performing a full sort. Elements before the k-th index are all
+  # smaller, and elements after are all larger. Their relative order is not
+  # guaranteed.
+
+  # To find the top-k largest values (descending), we can find the top-k
+  # smallest values of the negated array.
+  partition_target = -a if sort_order == "desc" else a
+
+  # Get the indices of the top_k elements for each row.
+  # The first `top_k` columns of the result will contain the indices of the
+  # `top_k` smallest elements, but in an unsorted order.
+  # We use `top_k - 1` because argpartition is 0-indexed.
+  top_k_indices = np.argpartition(partition_target, top_k - 1, axis=1)[:, :top_k]
+
+  if not sort_within_rows:
+    return top_k_indices
+
+  # --- Optional Sorting within the Top-K Results ---
+  # If sorting is required, we now perform a full sort but only on the
+  # top_k elements we've already identified.
+
+  # 1. Get the actual values corresponding to the top_k_indices.
+  #    np.take_along_axis is an efficient way to do this.
+  top_k_values = np.take_along_axis(a, top_k_indices, axis=1)
+
+  # 2. Get the sorting order for these top_k values.
+  #    This gives us indices relative to the (0, k-1) range.
+  sort_indices_within_k = np.argsort(top_k_values, axis=1)
+
+  # 3. For descending order, we reverse the sorted indices.
+  if sort_order == "desc":
+    sort_indices_within_k = np.fliplr(sort_indices_within_k)
+
+  # 4. Use the `sort_indices_within_k` to reorder the `top_k_indices`.
+  #    This applies the small sort to our final index array.
+  final_sorted_indices = np.take_along_axis(
+      top_k_indices, sort_indices_within_k, axis=1
+  )
+
+  return final_sorted_indices
 
 # can use numba @njit(nogil=True) in application code
 # https://stackoverflow.com/questions/6910641/how-do-i-get-indices-of-n-maximum-values-in-a-numpy-array
