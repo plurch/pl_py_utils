@@ -49,7 +49,7 @@ def row_wise_top_k(
   """
   # Determine the array module (numpy or cupy) to use
   if CUPY_AVAILABLE:
-      print("USING CUPY - remove me!")
+      # print("USING CUPY - remove me!")
       xp = cp.get_array_module(a)
   else:
       # If cupy is not installed, we can only be working with numpy
