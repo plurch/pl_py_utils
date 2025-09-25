@@ -1,7 +1,15 @@
 import numpy as np
 import numpy.typing as npt
-from typing import Literal
+from typing import Literal, Union, Final
 from .resources import getSizePretty
+
+# Gracefully try to import cupy
+try:
+    import cupy as cp
+    CUPY_AVAILABLE = True
+except ImportError:
+    cp = None
+    CUPY_AVAILABLE = False
 
 def row_wise_top_k(
   a: npt.NDArray[np.floating],
@@ -12,12 +20,14 @@ def row_wise_top_k(
   """
   Performs efficient row-wise top-k sorting for a 2D array using argpartition.
 
+  Pass in a cupy array to use cupy/gpu.
+
   This function finds the indices of the top-k values for each row in the input
   array. It is highly efficient for large arrays when k is much smaller than
   the number of columns, as it avoids a full sort.
 
   Args:
-    a: The 2D input array with shape (n_rows, n_cols).
+    a: The 2D input array with shape (n_rows, n_cols). Either numpy or cupy array.
     top_k: The number of top elements to return for each row.
     sort_order: The order of sorting.
       "asc" for ascending (smallest values are "top").
@@ -37,6 +47,14 @@ def row_wise_top_k(
 
   https://aistudio.google.com/app/prompts/1r1VEUqrb4Qm38OLvA8Cos90Il9aK2nAW
   """
+  # Determine the array module (numpy or cupy) to use
+  if CUPY_AVAILABLE:
+      print("USING CUPY - remove me!")
+      xp = cp.get_array_module(a)
+  else:
+      # If cupy is not installed, we can only be working with numpy
+      xp = np
+
   # --- Input Validation ---
   if a.ndim != 2:
     raise ValueError("Input array 'a' must be 2-dimensional.")
@@ -62,7 +80,7 @@ def row_wise_top_k(
   # The first `top_k` columns of the result will contain the indices of the
   # `top_k` smallest elements, but in an unsorted order.
   # We use `top_k - 1` because argpartition is 0-indexed.
-  top_k_indices = np.argpartition(partition_target, top_k - 1, axis=1)[:, :top_k]
+  top_k_indices = xp.argpartition(partition_target, top_k - 1, axis=1)[:, :top_k]
 
   if not sort_within_rows:
     return top_k_indices
@@ -73,19 +91,19 @@ def row_wise_top_k(
 
   # 1. Get the actual values corresponding to the top_k_indices.
   #    np.take_along_axis is an efficient way to do this.
-  top_k_values = np.take_along_axis(a, top_k_indices, axis=1)
+  top_k_values = xp.take_along_axis(a, top_k_indices, axis=1)
 
   # 2. Get the sorting order for these top_k values.
   #    This gives us indices relative to the (0, k-1) range.
-  sort_indices_within_k = np.argsort(top_k_values, axis=1)
+  sort_indices_within_k = xp.argsort(top_k_values, axis=1)
 
   # 3. For descending order, we reverse the sorted indices.
   if sort_order == "desc":
-    sort_indices_within_k = np.fliplr(sort_indices_within_k)
+    sort_indices_within_k = xp.fliplr(sort_indices_within_k)
 
   # 4. Use the `sort_indices_within_k` to reorder the `top_k_indices`.
   #    This applies the small sort to our final index array.
-  final_sorted_indices = np.take_along_axis(
+  final_sorted_indices = xp.take_along_axis(
       top_k_indices, sort_indices_within_k, axis=1
   )
 
