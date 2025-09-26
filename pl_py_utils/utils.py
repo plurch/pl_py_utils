@@ -1,14 +1,11 @@
 import math
 import os
 import platform
-import zoneinfo
-import signal
 import importlib.util
 import numpy.typing as npt
 from typing import Any, Sequence, TypeVar
 from types import ModuleType
 from timeit import default_timer as timer
-from datetime import datetime
 from pathlib import Path
 from importlib.metadata import version
 
@@ -17,38 +14,11 @@ from .resources import get_process_memory_usage, num_cpu_cores
 T = TypeVar('T')
 SequenceOrArray = Sequence[T] | npt.NDArray[Any]
 
-class Timeout:
-  # https://stackoverflow.com/a/22348885/359001
-  def __init__(self, seconds=1, error_message='Timeout'):
-    self.seconds = seconds
-    self.error_message = error_message
-  def handle_timeout(self, signum, frame):
-    raise TimeoutError(self.error_message)
-  def __enter__(self):
-    signal.signal(signal.SIGALRM, self.handle_timeout)
-    signal.alarm(self.seconds)
-  def __exit__(self, type, value, traceback):
-    signal.alarm(0)
-
 def get_file_path_str(file_path: Path | str) -> str:
   if isinstance(file_path, Path):
     file_path = str(file_path.resolve()) # convert to str if necessary
 
   return file_path
-
-def getCurrentTimeStamp() -> str:
-  """
-  Return timestamp as string. Ex. '2023-07-24T12_16_04'
-  """
-  return datetime.now().isoformat(timespec='seconds').replace(':', '_')
-
-def get_iso_timestamp_with_zone() -> str:
-  """
-  Return current timestamp in ISO format. Useful for postgres timestamp with zone insertion.
-
-  Ex. '2025-03-26T17:17:42.364646+00:00'
-  """
-  return datetime.now(zoneinfo.ZoneInfo("UTC")).isoformat()
 
 def timerPrint(msg: str):
   """
@@ -150,25 +120,6 @@ def get_env_var(env_var: str) -> str:
     return os.environ[env_var]
   except KeyError:
     raise ValueError(f"Environment variable {env_var} is not set")
-
-def print_time_elapsed(start_time: float):
-  """Prints elapsed time in human readable format"""
-  end_time = timer()
-  elapsed = end_time - start_time
-  
-  if elapsed < 1:
-    result_str = f"ran in {elapsed*1000:.2f} milliseconds"
-  elif elapsed < 60:
-    result_str = f"ran in {elapsed:.2f} seconds"
-  elif elapsed < 3600:
-    minutes, seconds = divmod(elapsed, 60)
-    result_str = f"ran in {int(minutes)} minutes and {seconds:.2f} seconds"
-  else:
-    hours, remainder = divmod(elapsed, 3600)
-    minutes, seconds = divmod(remainder, 60)
-    result_str = f"ran in {int(hours)} hours, {int(minutes)} minutes, and {seconds:.2f} seconds"
-
-  print(result_str, flush=True)
 
 def import_from_path(module_name: str, module_path: str) -> ModuleType:
   """
