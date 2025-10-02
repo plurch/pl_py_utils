@@ -103,18 +103,23 @@ class TimerContext:
 
     timer.print_stats()
     """
-    def __init__(self, description="my-timer", decimal_places=2):
+    def __init__(self, description="my-timer", decimal_places=2, print_each=False):
         self.description = description
         self.decimal_places = decimal_places
+        self.print_each = print_each
         self.durations = []
     
     def __enter__(self):
         self.start_time = time.perf_counter()
+        if self.print_each:
+           print(f'Starting: {self.description}')
         return self
     
     def __exit__(self, exc_type, exc_val, exc_tb):
-        end_time = time.perf_counter()
-        self.durations.append(end_time - self.start_time)
+        duration = time.perf_counter() - self.start_time
+        self.durations.append(duration)
+        if self.print_each:
+           print(f'Completed: {self.description}. Duration: {duration:.{self.decimal_places}f}')
     
     def print_stats(self):
         count_val = len(self.durations)
