@@ -126,11 +126,12 @@ class TimerContext:
         stdev_val = f"{statistics.stdev(self.durations):.{self.decimal_places}f} seconds" if count_val > 1 else "N/A"
         print("-" * 60)
         print(f'Stats for: {self.description}')
-        print(f"Mean:      {statistics.mean(self.durations):.{self.decimal_places}f} seconds")
-        print(f"Median:    {statistics.median(self.durations):.{self.decimal_places}f} seconds")
-        print(f"Min:       {min(self.durations):.{self.decimal_places}f} seconds")
-        print(f"Max:       {max(self.durations):.{self.decimal_places}f} seconds")
-        print(f"Total:     {sum(self.durations):.{self.decimal_places}f} seconds")
-        print(f"StdDev:    {stdev_val}")
+        if count_val > 0:
+          print(f"Mean:      {statistics.mean(self.durations):.{self.decimal_places}f} seconds")
+          print(f"Median:    {statistics.median(self.durations):.{self.decimal_places}f} seconds")
+          print(f"Min:       {min(self.durations):.{self.decimal_places}f} seconds")
+          print(f"Max:       {max(self.durations):.{self.decimal_places}f} seconds")
+          print(f"Total:     {sum(self.durations):.{self.decimal_places}f} seconds")
+          print(f"StdDev:    {stdev_val}")
         print(f"Count:     {count_val}")
         print("-" * 60)

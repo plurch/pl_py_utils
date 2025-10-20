@@ -80,6 +80,9 @@ def row_wise_top_k(
   # The first `top_k` columns of the result will contain the indices of the
   # `top_k` smallest elements, but in an unsorted order.
   # We use `top_k - 1` because argpartition is 0-indexed.
+  # memory usage for argpartition:
+  # "You can expect memory usage to be roughly 2-3x the size of the input array (not the output), though this can vary"
+  # https://claude.ai/chat/c41e555a-af41-45c3-8f0e-9f40525b5160
   top_k_indices = xp.argpartition(partition_target, top_k - 1, axis=1)[:, :top_k]
 
   if not sort_within_rows:
