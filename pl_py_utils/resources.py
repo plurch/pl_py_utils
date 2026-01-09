@@ -128,3 +128,109 @@ def get_process_memory_usage():
   mem_info = process.memory_info()
   # mem_info.vms for VMS
   return getSizePretty(mem_info.rss)
+
+def parse_smaps(pid):
+    """
+    Parse /proc/[pid]/smaps and return memory breakdown in MB.
+    
+    The smaps file is a Linux pseudo-file that provides detailed memory 
+    consumption statistics for each memory mapping in a process. Unlike 
+    /proc/[pid]/status or /proc/[pid]/statm which give aggregate figures,
+    smaps breaks down memory usage per-mapping with categories including:
+    
+    - Shared_Clean: Memory shared with other processes, unmodified since mapped
+    - Shared_Dirty: Memory shared with other processes, modified (needs writeback)
+    - Private_Clean: Memory exclusive to this process, unmodified (e.g., mapped code)
+    - Private_Dirty: Memory exclusive to this process, modified (heap, stack, COW pages)
+    
+    This distinction is critical for understanding actual memory cost:
+    - Shared memory is typically copy-on-write mappings (libraries, forked data)
+      and doesn't count toward per-process memory pressure
+    - Private_Dirty is the "true" memory cost unique to this process
+    - Private_Clean can be reclaimed/reloaded from disk if needed
+    
+    Parameters
+    ----------
+    pid : int or str
+        Process ID to inspect.
+    
+    Returns
+    -------
+    dict or None
+        Dictionary with memory stats in MB:
+        - 'shared_clean', 'shared_dirty', 'total_shared'
+        - 'private_clean', 'private_dirty', 'total_private'
+        Returns None if the process doesn't exist or is inaccessible.
+    """
+    try:
+        with open(f'/proc/{pid}/smaps', 'r') as f:
+            lines = f.readlines()
+    except (FileNotFoundError, PermissionError):
+        return None
+    
+    shared_clean = 0
+    shared_dirty = 0
+    private_clean = 0
+    private_dirty = 0
+    
+    for line in lines:
+        if line.startswith('Shared_Clean:'):
+            shared_clean += int(line.split()[1])
+        elif line.startswith('Shared_Dirty:'):
+            shared_dirty += int(line.split()[1])
+        elif line.startswith('Private_Clean:'):
+            private_clean += int(line.split()[1])
+        elif line.startswith('Private_Dirty:'):
+            private_dirty += int(line.split()[1])
+    
+    return {
+        'shared_clean': shared_clean / 1024,
+        'shared_dirty': shared_dirty / 1024,
+        'private_clean': private_clean / 1024,
+        'private_dirty': private_dirty / 1024,
+        'total_shared': (shared_clean + shared_dirty) / 1024,
+        'total_private': (private_clean + private_dirty) / 1024
+    }
+
+
+def print_memory_stats(pid, label="Process"):
+    """
+    Print formatted memory statistics for a process.
+    
+    Retrieves and displays a human-readable breakdown of shared vs private
+    memory usage, useful for diagnosing memory behavior in multiprocessing
+    scenarios (e.g., verifying copy-on-write efficiency after fork()).
+    
+    Parameters
+    ----------
+    pid : int or str
+        Process ID to inspect.
+    label : str, optional
+        Descriptive label for the output (default: "Process").
+    
+    Returns
+    -------
+    dict or None
+        The memory stats dictionary from parse_smaps(), or None if unavailable.
+    
+    Example Output
+    --------------
+        Worker 0 (PID 12345):
+          Shared memory:    512.00 MB
+            - Clean:        510.00 MB
+            - Dirty:          2.00 MB
+          Private memory:    64.00 MB
+            - Clean:         12.00 MB
+            - Dirty:         52.00 MB
+    """
+    stats = parse_smaps(pid)
+    if stats:
+        print(f"\n{label} (PID {pid}):")
+        print(f"  Shared memory:  {stats['total_shared']:8.2f} MB")
+        print(f"    - Clean:      {stats['shared_clean']:8.2f} MB")
+        print(f"    - Dirty:      {stats['shared_dirty']:8.2f} MB")
+        print(f"  Private memory: {stats['total_private']:8.2f} MB")
+        print(f"    - Clean:      {stats['private_clean']:8.2f} MB")
+        print(f"    - Dirty:      {stats['private_dirty']:8.2f} MB")
+        return stats
+    return None
