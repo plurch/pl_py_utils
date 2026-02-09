@@ -95,6 +95,8 @@ def print_gpu_usage():
   pprint(data)
 
 def print_system_info():
+  print('Current interpreter python version:')
+  print(sys.version)
   cpu_cores = num_cpu_cores()
   print(f'CPU cores: {cpu_cores.physical} physical, {cpu_cores.logical} logical')
   mem_usage = psutil.virtual_memory()
