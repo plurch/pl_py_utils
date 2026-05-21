@@ -31,16 +31,18 @@ def download_s3_dir(s3_client, bucket_name: str, prefix: str, download_dir: Path
       local_file_path = os.path.join(download_dir, os.path.basename(key))
       s3_client.download_file(bucket_name, key, local_file_path)
 
-def get_secret_dict(boto_session, secret_name: str, region_name = "us-east-1") -> dict:
+def get_secret(boto_session, secret_name: str, region_name = "us-east-1") -> str:
   '''
   sample code from aws console secrets manager
   https://docs.aws.amazon.com/secretsmanager/latest/userguide/retrieving-secrets-python-sdk.html
   boto_session = boto3.Session(region_name='us-east-1')
-  may want to refactor this to conditionally parse json
   '''
   client = boto_session.client(service_name='secretsmanager', region_name=region_name)
 
   # For a list of exceptions thrown, see
   # https://docs.aws.amazon.com/secretsmanager/latest/apireference/API_GetSecretValue.html
   get_secret_value_response = client.get_secret_value(SecretId=secret_name)
-  return json.loads(get_secret_value_response['SecretString'])
+  return get_secret_value_response['SecretString']
+
+def get_secret_dict(boto_session, secret_name: str, region_name = "us-east-1") -> dict:
+  return json.loads(get_secret(boto_session, secret_name, region_name))
