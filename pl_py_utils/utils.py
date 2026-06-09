@@ -3,6 +3,8 @@ import os
 import platform
 import importlib.util
 import numpy.typing as npt
+from enum import Enum
+from typing import Type, TypeVar
 from typing import Any, Sequence, TypeVar
 from types import ModuleType
 from timeit import default_timer as timer
@@ -120,6 +122,37 @@ def get_env_var(env_var: str) -> str:
     return os.environ[env_var]
   except KeyError:
     raise ValueError(f"Environment variable {env_var} is not set")
+
+# Create a Generic type bound to Enum
+E = TypeVar("E", bound=Enum)
+
+def get_enum_env(var_name: str, enum_class: Type[E]) -> E:
+    """
+    Fetches an environment variable, converts it to an integer, and maps it
+    to a specific Enum class. Raises an error if missing, invalid, or not in the Enum.
+    """
+    raw_value = os.environ.get(var_name)
+
+    if raw_value is None:
+        raise KeyError(f"Environment variable '{var_name}' is not set.")
+
+    try:
+        int_value = int(raw_value)
+    except ValueError:
+        raise TypeError(
+            f"Environment variable '{var_name}' must be an integer. "
+            f"Got '{raw_value}' instead."
+        )
+
+    try:
+        return enum_class(int_value)
+    except ValueError:
+        valid_values = [member.value for member in enum_class]
+        raise ValueError(
+            f"Integer '{int_value}' from '{var_name}' is not a valid {enum_class.__name__}. "
+            f"Expected one of: {valid_values}"
+        )
+
 
 def import_from_path(module_name: str, module_path: str) -> ModuleType:
   """
